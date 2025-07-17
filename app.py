@@ -3,13 +3,14 @@ import os
 import requests
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
+import traceback
 
 app = Flask(__name__)
 load_dotenv()
 
-HA_URL = os.getenv("HA_URL")
-HA_TOKEN = os.getenv("HA_TOKEN")
-ENTITY_ID = os.getenv("ENTITY_ID")
+HA_TOKEN = os.getenv("HA_TOKEN", "").strip()
+HA_URL = os.getenv("HA_URL", "").strip()
+ENTITY_ID = os.getenv("ENTITY_ID", "").strip()
 CHANNEL_ID = "UCCxF55adGXOscJ3L8qdKnrQ"
 
 @app.route("/update_bryson", methods=["POST"])
@@ -30,11 +31,13 @@ def update_bryson_video():
             "Content-Type": "application/json"
         }
         payload = {"state": latest_video_url}
+    
         res = requests.post(ha_api_url, headers=ha_headers, json=payload)
         res.raise_for_status()
 
         return jsonify({"success": True, "url": latest_video_url})
     except Exception as e:
+        traceback.print_exc()  # Logs full stack trace to console or Docker logs
         return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == "__main__":
